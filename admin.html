@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="id" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Presensi Shalat Dzuhur</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- QR Code Generator Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body class="h-full text-slate-800 flex flex-col font-sans">
+
+    <!-- Header Navigation -->
+    <header class="bg-emerald-700 text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <i class="fa-solid font-bold fa-mosque text-2xl text-emerald-300"></i>
+                <h1 class="font-bold text-lg sm:text-xl tracking-wide">SIM-Dzuhur Admin</h1>
+            </div>
+            <div class="flex items-center space-x-2 sm:space-x-4 text-xs sm:text-sm">
+                <span id="clock" class="bg-emerald-800/60 px-3 py-1.5 rounded-lg border border-emerald-500/30 font-mono">00:00:00 WIB</span>
+                <a href="siswa.html" target="_blank" class="bg-emerald-500 hover:bg-emerald-400 text-white px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1.5 shadow">
+                    <i class="fa-solid fa-mobile-screen"></i>
+                    <span class="hidden sm:inline">Portal Siswa</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col md:flex-row gap-6">
+
+        <!-- Sidebar Menu -->
+        <aside class="w-full md:w-64 bg-white rounded-2xl shadow-sm border border-slate-200/80 p-4 shrink-0 h-fit">
+            <nav class="space-y-1" id="main-nav">
+                <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm text-emerald-700 bg-emerald-50 border border-emerald-100 transition">
+                    <i class="fa-solid fa-chart-pie w-5"></i> Dashboard Rekap
+                </button>
+                <button onclick="switchTab('input-presensi')" id="nav-input-presensi" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm text-slate-600 hover:bg-slate-50 transition">
+                    <i class="fa-solid fa-clipboard-user w-5"></i> Input Manual Guru
+                </button>
+                <button onclick="switchTab('qr-generator')" id="nav-qr-generator" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm text-slate-600 hover:bg-slate-50 transition">
+                    <i class="fa-solid fa-qrcode w-5"></i> QR Code Masjid
+                </button>
+                <button onclick="switchTab('kelola-kelas')" id="nav-kelola-kelas" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm text-slate-600 hover:bg-slate-50 transition">
+                    <i class="fa-solid fa-school w-5"></i> Kelola Kelas (50)
+                </button>
+                <button onclick="switchTab('kelola-siswa')" id="nav-kelola-siswa" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm text-slate-600 hover:bg-slate-50 transition">
+                    <i class="fa-solid fa-users-gear w-5"></i> Kelola Data Siswa
+                </button>
+            </nav>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="flex-1">
+
+            <!-- 1. DASHBOARD TAB -->
+            <div id="tab-dashboard" class="tab-content space-y-6">
+                <!-- Stats Summary -->
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/80">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Berjamaah</span>
+                            <span class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-xs"><i class="fa-solid fa-users"></i></span>
+                        </div>
+                        <div id="stat-berjamaah" class="text-2xl font-extrabold text-slate-800 mt-2">0</div>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/80">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Munfarid</span>
+                            <span class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs"><i class="fa-solid fa-user"></i></span>
+                        </div>
+                        <div id="stat-munfarid" class="text-2xl font-extrabold text-slate-800 mt-2">0</div>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/80">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Berhalangan</span>
+                            <span class="w-8 h-8 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center text-xs"><i class="fa-solid fa-hand"></i></span>
+                        </div>
+                        <div id="stat-halangan" class="text-2xl font-extrabold text-slate-800 mt-2">0</div>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/80">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Belum Absen</span>
+                            <span class="w-8 h-8 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center text-xs"><i class="fa-solid fa-clock-rotate-left"></i></span>
+                        </div>
+                        <div id="stat-belum" class="text-2xl font-extrabold text-slate-800 mt-2">0</div>
+                    </div>
+                </div>
+
+                <!-- Table Data Presensi -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
+                    <div class="p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <h2 class="font-bold text-slate-800 text-lg">Data Presensi Hari Ini</h2>
+                        <div class="flex items-center gap-2">
+                            <button onclick="exportToCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-xl text-xs font-semibold transition flex items-center gap-1.5">
+                                <i class="fa-solid fa-file-excel"></i> Export CSV
+                            </button>
+                            <button onclick="window.print()" class="bg-slate-700 hover:bg-slate-800 text-white px-3 py-2 rounded-xl text-xs font-semibold transition flex items-center gap-1.5">
+                                <i class="fa-solid fa-print"></i> Cetak
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Filter Bar -->
+                    <div class="p-4 bg-slate-50 border-b border-slate-100 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <input type="text" id="filter-search" oninput="renderPresensiTable()" placeholder="Cari Nama / NIS..." class="px-3.5 py-2 border rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                        <select id="filter-kelas" onchange="renderPresensiTable()" class="px-3.5 py-2 border rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                            <option value="">Semua Kelas</option>
+                        </select>
+                        <select id="filter-status" onchange="renderPresensiTable()" class="px-3.5 py-2 border rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                            <option value="">Semua Status Shalat</option>
+                            <option value="Berjamaah">Berjamaah</option>
+                            <option value="Munfarid">Munfarid</option>
+                            <option value="Berhalangan">Berhalangan (Haiz/Sakit)</option>
+                        </select>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm text-slate-600">
+                            <thead class="bg-slate-50 text-xs text-slate-500 uppercase border-b">
+                                <tr>
+                                    <th class="px-5 py-3">Waktu</th>
+                                    <th class="px-5 py-3">NIS</th>
+                                    <th class="px-5 py-3">Nama Siswa</th>
+                                    <th class="px-5 py-3">Kelas</th>
+                                    <th class="px-5 py-3">Status</th>
+                                    <th class="px-5 py-3">Pencatat</th>
+                                    <th class="px-5 py-3 text-right">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="presensi-table-body" class="divide-y divide-slate-100">
+                                <!-- Dynamic Render -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. INPUT MANUAL GURU TAB -->
+            <div id="tab-input-presensi" class="tab-content hidden">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6 max-w-xl mx-auto">
+                    <h2 class="font-bold text-lg text-slate-800 mb-4 border-b pb-3">Form Presensi Manual Guru Piket</h2>
+                    <form id="form-presensi-manual" onsubmit="saveManualPresensi(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Pilih Kelas</label>
+                            <select id="manual-select-kelas" onchange="updateManualStudentDropdown()" required class="w-full px-3.5 py-2.5 border rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                                <option value="">-- Pilih Kelas --</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Pilih Siswa</label>
+                            <select id="manual-select-siswa" required class="w-full px-3.5 py-2.5 border rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                                <option value="">-- Pilih Kelas Terlebih Dahulu --</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Status Shalat</label>
+                            <select id="manual-status" required class="w-full px-3.5 py-2.5 border rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                                <option value="Berjamaah">Berjamaah di Masjid</option>
+                                <option value="Munfarid">Munfarid (Sendiri)</option>
+                                <option value="Berhalangan">Berhalangan (Haiz / Sakit)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Nama Guru Piket / Verifikator</label>
+                            <input type="text" id="manual-pencatat" placeholder="Nama Guru" value="Ustadz Ahmad, S.Pd." required class="w-full px-3.5 py-2.5 border rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                        </div>
+                        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 rounded-xl transition shadow">Simpan Presensi</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- 3. QR CODE MASJID GENERATOR TAB -->
+            <div id="tab-qr-generator" class="tab-content hidden">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-8 max-w-md mx-auto text-center space-y-5">
+                    <h2 class="font-bold text-slate-800 text-xl">QR Code Presensi Shalat Dzuhur</h2>
+                    <p class="text-sm text-slate-500">Tempelkan QR Code ini di papan pengumuman Masjid/Musholla. Siswa cukup melakukan scan melalui HP masing-masing.</p>
+                    
+                    <div class="p-4 bg-slate-50 rounded-2xl border flex justify-center items-center inline-block">
+                        <div id="qrcode-container" class="p-3 bg-white rounded-xl shadow-inner"></div>
+                    </div>
+
+                    <div class="flex gap-3 justify-center">
+                        <button onclick="downloadQRCode()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition flex items-center gap-2">
+                            <i class="fa-solid fa-download"></i> Unduh Gambar QR
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. KELOLA KELAS TAB -->
+            <div id="tab-kelola-kelas" class="tab-content hidden space-y-6">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200/80">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                        <div>
+                            <h2 class="font-bold text-slate-800 text-lg">Manajemen Kelas</h2>
+                            <p class="text-xs text-slate-500">Kelola daftar rombel/kelas (Mendukung hingga 50 Kelas)</p>
+                        </div>
+                        <button onclick="generate50Classes()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl text-xs font-semibold transition flex items-center gap-2">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i> Auto-Generate 50 Kelas
+                        </button>
+                    </div>
+
+                    <form onsubmit="addClass(event)" class="flex gap-3 mb-6">
+                        <input type="text" id="new-class-name" placeholder="Nama Kelas Baru (Misal: 10 IPA 1)" required class="flex-1 px-3.5 py-2 border rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                        <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-xl text-sm font-semibold transition">Tambah</button>
+                    </form>
+
+                    <div id="class-list-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 max-h-96 overflow-y-auto p-1">
+                        <!-- Dynamic Render -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. KELOLA SISWA TAB -->
+            <div id="tab-kelola-siswa" class="tab-content hidden space-y-6">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200/80">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                        <div>
+                            <h2 class="font-bold text-slate-800 text-lg">Manajemen Master Data Siswa</h2>
+                            <p class="text-xs text-slate-500">Kelola data siswa per kelas (50 Siswa / Kelas)</p>
+                        </div>
+                        <button onclick="generate50StudentsPerClass()" class="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-xl text-xs font-semibold transition flex items-center gap-2">
+                            <i class="fa-solid fa-users-line"></i> Auto-Generate 50 Siswa / Kelas
+                        </button>
+                    </div>
+
+                    <!-- Form Tambah Siswa -->
+                    <form onsubmit="addStudent(event)" class="grid grid-cols-1 sm:grid-cols-4 gap-3 mb-6 p-4 bg-slate-50 rounded-xl border">
+                        <input type="text" id="new-student-nis" placeholder="NIS / NISN" required class="px-3.5 py-2 border rounded-xl text-sm outline-none">
+                        <input type="text" id="new-student-name" placeholder="Nama Lengkap Siswa" required class="px-3.5 py-2 border rounded-xl text-sm outline-none">
+                        <select id="new-student-class" required class="px-3.5 py-2 border rounded-xl text-sm outline-none">
+                            <option value="">-- Pilih Kelas --</option>
+                        </select>
+                        <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 rounded-xl text-sm transition">Simpan Siswa</button>
+                    </form>
+
+                    <!-- Table Siswa -->
+                    <div class="overflow-x-auto border rounded-xl">
+                        <table class="w-full text-left text-sm text-slate-600">
+                            <thead class="bg-slate-50 text-xs text-slate-500 uppercase border-b">
+                                <tr>
+                                    <th class="px-4 py-3">NIS</th>
+                                    <th class="px-4 py-3">Nama Siswa</th>
+                                    <th class="px-4 py-3">Kelas</th>
+                                    <th class="px-4 py-3 text-right">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="student-table-body" class="divide-y divide-slate-100">
+                                <!-- Dynamic Render -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Application Script -->
+    <script>
+        // Key Storage
+        const STORAGE_CLASSES = 'dzuhur_classes';
+        const STORAGE_STUDENTS = 'dzuhur_students';
+        const STORAGE_ATTENDANCE = 'dzuhur_attendance';
+
+        // State Init
+        let classes = JSON.parse(localStorage.getItem(STORAGE_CLASSES)) || [];
+        let students = JSON.parse(localStorage.getItem(STORAGE_STUDENTS)) || [];
+        let attendance = JSON.parse(localStorage.getItem(STORAGE_ATTENDANCE)) || [];
+
+        // Clock Initialization
+        setInterval(() => {
+            document.getElementById('clock').innerText = new Date().toLocaleTimeString('id-ID') + ' WIB';
+        }, 1000);
+
+        // Tab Switcher
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.nav-btn').forEach(el => {
+                el.classList.remove('bg-emerald-50', 'text-emerald-700', 'border-emerald-100');
+                el.classList.add('text-slate-600');
+            });
+
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+            const activeNav = document.getElementById(`nav-${tabId}`);
+            activeNav.classList.add('bg-emerald-50', 'text-emerald-700', 'border-emerald-100');
+            activeNav.classList.remove('text-slate-600');
+
+            if (tabId === 'qr-generator') renderQRCode();
+            if (tabId === 'dashboard') renderDashboard();
+            if (tabId === 'kelola-kelas') renderClasses();
+            if (tabId === 'kelola-siswa') renderStudents();
+            if (tabId === 'input-presensi') populateManualClassDropdown();
+        }
+
+        // --- DASHBOARD LOGIC ---
+        function renderDashboard() {
+            populateFilterClasses();
+            renderPresensiTable();
+        }
+
+        function populateFilterClasses() {
+            const select = document.getElementById('filter-kelas');
+            select.innerHTML = '<option value="">Semua Kelas</option>';
+            classes.forEach(c => {
+                select.innerHTML += `<option value="${c}">${c}</option>`;
+            });
+        }
+
+        function renderPresensiTable() {
+            const search = document.getElementById('filter-search').value.toLowerCase();
+            const filterKelas = document.getElementById('filter-kelas').value;
+            const filterStatus = document.getElementById('filter-status').value;
+            const tbody = document.getElementById('presensi-table-body');
+            tbody.innerHTML = '';
+
+            let counts = { Berjamaah: 0, Munfarid: 0, Berhalangan: 0 };
+
+            const filtered = attendance.filter(item => {
+                const matchSearch = item.nama.toLowerCase().includes(search) || item.nis.includes(search);
+                const matchKelas = !filterKelas || item.kelas === filterKelas;
+                const matchStatus = !filterStatus || item.status === filterStatus;
+                return matchSearch && matchKelas && matchStatus;
+            });
+
+            attendance.forEach(item => {
+                if (counts[item.status] !== undefined) counts[item.status]++;
+            });
+
+            document.getElementById('stat-berjamaah').innerText = counts.Berjamaah;
+            document.getElementById('stat-munfarid').innerText = counts.Munfarid;
+            document.getElementById('stat-halangan').innerText = counts.Berhalangan;
+            document.getElementById('stat-belum').innerText = Math.max(0, students.length - attendance.length);
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center py-6 text-slate-400">Belum ada data presensi yang cocok.</td></tr>`;
+                return;
+            }
+
+            filtered.forEach((item, index) => {
+                let badgeClass = item.status === 'Berjamaah' ? 'bg-emerald-100 text-emerald-700' :
+                                 item.status === 'Munfarid' ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700';
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50/80 transition">
+                        <td class="px-5 py-3.5 font-mono text-xs">${item.waktu}</td>
+                        <td class="px-5 py-3.5 font-mono text-xs">${item.nis}</td>
+                        <td class="px-5 py-3.5 font-medium text-slate-800">${item.nama}</td>
+                        <td class="px-5 py-3.5">${item.kelas}</td>
+                        <td class="px-5 py-3.5"><span class="px-2.5 py-1 rounded-full text-xs font-semibold ${badgeClass}">${item.status}</span></td>
+                        <td class="px-5 py-3.5 text-xs text-slate-500">${item.pencatat || 'Mandiri Siswa'}</td>
+                        <td class="px-5 py-3.5 text-right">
+                            <button onclick="deleteAttendance(${index})" class="text-rose-500 hover:text-rose-700 text-xs"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function deleteAttendance(index) {
+            if (confirm('Hapus record presensi ini?')) {
+                attendance.splice(index, 1);
+                localStorage.setItem(STORAGE_ATTENDANCE, JSON.stringify(attendance));
+                renderDashboard();
+            }
+        }
+
+        // --- MANUAL PRESENSI GURU ---
+        function populateManualClassDropdown() {
+            const select = document.getElementById('manual-select-kelas');
+            select.innerHTML = '<option value="">-- Pilih Kelas --</option>';
+            classes.forEach(c => select.innerHTML += `<option value="${c}">${c}</option>`);
+        }
+
+        function updateManualStudentDropdown() {
+            const selectedClass = document.getElementById('manual-select-kelas').value;
+            const selectSiswa = document.getElementById('manual-select-siswa');
+            selectSiswa.innerHTML = '<option value="">-- Pilih Siswa --</option>';
+
+            const filteredStudents = students.filter(s => s.kelas === selectedClass);
+            filteredStudents.forEach(s => {
+                selectSiswa.innerHTML += `<option value="${s.nis}">${s.nama} (${s.nis})</option>`;
+            });
+        }
+
+        function saveManualPresensi(e) {
+            e.preventDefault();
+            const nis = document.getElementById('manual-select-siswa').value;
+            const student = students.find(s => s.nis === nis);
+            if (!student) return;
+
+            const newRecord = {
+                nis: student.nis,
+                nama: student.nama,
+                kelas: student.kelas,
+                status: document.getElementById('manual-status').value,
+                waktu: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+                tanggal: new Date().toLocaleDateString('id-ID'),
+                pencatat: document.getElementById('manual-pencatat').value
+            };
+
+            attendance.unshift(newRecord);
+            localStorage.setItem(STORAGE_ATTENDANCE, JSON.stringify(attendance));
+            alert('Presensi berhasil disimpan!');
+            switchTab('dashboard');
+        }
+
+        // --- KELOLA KELAS & SISWA ---
+        function renderClasses() {
+            const container = document.getElementById('class-list-container');
+            container.innerHTML = '';
+            classes.forEach((c, i) => {
+                container.innerHTML += `
+                    <div class="p-3 bg-slate-50 border rounded-xl flex items-center justify-between">
+                        <span class="font-medium text-sm text-slate-700">${c}</span>
+                        <button onclick="deleteClass(${i})" class="text-rose-500 hover:text-rose-700 text-xs"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                `;
+            });
+        }
+
+        function addClass(e) {
+            e.preventDefault();
+            const name = document.getElementById('new-class-name').value.trim();
+            if (name && !classes.includes(name)) {
+                classes.push(name);
+                localStorage.setItem(STORAGE_CLASSES, JSON.stringify(classes));
+                document.getElementById('new-class-name').value = '';
+                renderClasses();
+            }
+        }
+
+        function deleteClass(index) {
+            classes.splice(index, 1);
+            localStorage.setItem(STORAGE_CLASSES, JSON.stringify(classes));
+            renderClasses();
+        }
+
+        function generate50Classes() {
+            classes = [];
+            const tingkat = ['10', '11', '12', '13', '14'];
+            const jurusan = ['IPA', 'IPS', 'AGAMA', 'AKUNTANSI', 'TKJ', 'RPL', 'OTKP', 'BDP', 'TEM', 'TITL'];
+            
+            let count = 0;
+            for (let t of tingkat) {
+                for (let j of jurusan) {
+                    if (count < 50) {
+                        classes.push(`Kelas ${t} ${j}`);
+                        count++;
+                    }
+                }
+            }
+            localStorage.setItem(STORAGE_CLASSES, JSON.stringify(classes));
+            renderClasses();
+            alert('Berhasil membuat 50 Kelas otomatis!');
+        }
+
+        function renderStudents() {
+            const tbody = document.getElementById('student-table-body');
+            const selectClass = document.getElementById('new-student-class');
+            selectClass.innerHTML = '<option value="">-- Pilih Kelas --</option>';
+            classes.forEach(c => selectClass.innerHTML += `<option value="${c}">${c}</option>`);
+
+            tbody.innerHTML = '';
+            students.slice(0, 100).forEach((s, i) => { // Limit preview to 100 for performance
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50">
+                        <td class="px-4 py-2.5 font-mono text-xs">${s.nis}</td>
+                        <td class="px-4 py-2.5 font-medium">${s.nama}</td>
+                        <td class="px-4 py-2.5">${s.kelas}</td>
+                        <td class="px-4 py-2.5 text-right">
+                            <button onclick="deleteStudent(${i})" class="text-rose-500 hover:text-rose-700 text-xs"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function addStudent(e) {
+            e.preventDefault();
+            const nis = document.getElementById('new-student-nis').value.trim();
+            const nama = document.getElementById('new-student-name').value.trim();
+            const kelas = document.getElementById('new-student-class').value;
+
+            if (nis && nama && kelas) {
+                students.push({ nis, nama, kelas });
+                localStorage.setItem(STORAGE_STUDENTS, JSON.stringify(students));
+                document.getElementById('new-student-nis').value = '';
+                document.getElementById('new-student-name').value = '';
+                renderStudents();
+            }
+        }
+
+        function deleteStudent(index) {
+            students.splice(index, 1);
+            localStorage.setItem(STORAGE_STUDENTS, JSON.stringify(students));
+            renderStudents();
+        }
+
+        function generate50StudentsPerClass() {
+            if (classes.length === 0) return alert('Buat kelas terlebih dahulu!');
+            students = [];
+            let nisCounter = 20241001;
+            
+            classes.forEach(c => {
+                for (let i = 1; i <= 50; i++) {
+                    students.push({
+                        nis: (nisCounter++).toString(),
+                        nama: `Siswa ${i} ${c}`,
+                        kelas: c
+                    });
+                }
+            });
+
+            localStorage.setItem(STORAGE_STUDENTS, JSON.stringify(students));
+            renderStudents();
+            alert(`Berhasil generate ${students.length} Siswa (${classes.length} kelas x 50 siswa)!`);
+        }
+
+        // --- QR GENERATOR LOGIC ---
+        function renderQRCode() {
+            const container = document.getElementById('qrcode-container');
+            container.innerHTML = '';
+            new QRCode(container, {
+                text: "MASJID_DZUHUR_SESSION_ACTIVE",
+                width: 220,
+                height: 220,
+                colorDark : "#047857",
+                colorLight : "#ffffff"
+            });
+        }
+
+        function downloadQRCode() {
+            const img = document.querySelector('#qrcode-container img');
+            if (img) {
+                const link = document.createElement('a');
+                link.download = 'QR_Absensi_Dzuhur.png';
+                link.href = img.src;
+                link.click();
+            }
+        }
+
+        function exportToCSV() {
+            let csv = 'Waktu,NIS,Nama,Kelas,Status,Pencatat\n';
+            attendance.forEach(r => {
+                csv += `"${r.waktu}","${r.nis}","${r.nama}","${r.kelas}","${r.status}","${r.pencatat || 'Mandiri'}"\n`;
+            });
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.setAttribute('href', url);
+            a.setAttribute('download', `rekap_dzuhur_${new Date().toISOString().slice(0,10)}.csv`);
+            a.click();
+        }
+
+        // Init Load
+        renderDashboard();
+    </script>
+</body>
+</html>
